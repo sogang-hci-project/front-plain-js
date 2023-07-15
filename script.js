@@ -2,11 +2,17 @@ const state = {
   sessionID: null,
   nextStage: null,
   currentStage: null,
+  server: null,
 };
 
 window.onload = function () {
+  state.server =
+    window.localStorage.getItem("picasso") || "http://localhost:3030";
+  window.localStorage.setItem("picasso", state.server);
+  document.getElementById("server").textContent =
+    "current server: " + state.server;
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", "http://localhost:3030/api/v1/greeting/0", true);
+  xhr.open("POST", `${state.server}/api/v1/greeting/0`, true);
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -36,10 +42,20 @@ document.getElementById("input").addEventListener("keypress", function (e) {
     repeatMessage();
   }
 });
+var serverInput = document.getElementById("serverInput");
+document.getElementById("confirm").addEventListener("click", setServer);
+
+function setServer() {
+  state.server = document.getElementById("serverInput").value;
+  document.getElementById("serverInput").value = "";
+  window.localStorage.setItem("picasso", state.server);
+  document.getElementById("server").textContent =
+    "current server: " + state.server;
+}
 
 function sendMessage() {
   var inputValue = document.getElementById("input").value;
-  var url = `http://localhost:3030/api/v1${state.nextStage}?lang=en&sessionID=${state.sessionID}`;
+  var url = `${state.server}/api/v1${state.nextStage}?lang=en&sessionID=${state.sessionID}`;
   var body = {
     user: inputValue,
   };
