@@ -3,16 +3,25 @@ const state = {
   nextStage: null,
   currentStage: null,
   server: null,
+  language: null,
+  mode: null,
 };
 
 window.onload = function () {
   state.server =
-    window.localStorage.getItem("picasso") || "http://localhost:3030";
-  window.localStorage.setItem("picasso", state.server);
+    window.localStorage.getItem("picasso-server") || "http://localhost:3030";
+  //https://163.239.109.58:13502
+  window.localStorage.setItem("picasso-server", state.server);
+  state.language = window.localStorage.getItem("picasso-language") || "en";
+  window.localStorage.setItem("picasso-language", state.language);
+  state.mode = window.localStorage.getItem("picasso-mode") || "normal";
+  window.localStorage.setItem("picasso-mode", state.mode);
+
+  document.getElementById("languageSelect").value = "en";
   document.getElementById("server").textContent =
     "current server: " + state.server;
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", `${state.server}/api/v1/greeting/0`, true);
+  xhr.open("POST", `${state.server}/api/v1/register`, true);
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -44,18 +53,36 @@ document.getElementById("input").addEventListener("keypress", function (e) {
 });
 var serverInput = document.getElementById("serverInput");
 document.getElementById("confirm").addEventListener("click", setServer);
+document
+  .getElementById("languageSelect")
+  .addEventListener("change", setLanguage);
+document.getElementById("modeSelect").addEventListener("change", setMode);
+
+function setLanguage() {
+  var select = document.getElementById("languageSelect");
+  var selectedOption = select.options[select.selectedIndex].value;
+  window.localStorage.setItem("picasso-language", selectedOption);
+  state.language = selectedOption;
+}
+
+function setMode() {
+  var select = document.getElementById("modeSelect");
+  var selectedOption = select.options[select.selectedIndex].value;
+  window.localStorage.setItem("picasso-mode", selectedOption);
+  state.mode = selectedOption;
+}
 
 function setServer() {
   state.server = document.getElementById("serverInput").value;
   document.getElementById("serverInput").value = "";
-  window.localStorage.setItem("picasso", state.server);
+  window.localStorage.setItem("picasso-server", state.server);
   document.getElementById("server").textContent =
     "current server: " + state.server;
 }
 
 function sendMessage() {
   var inputValue = document.getElementById("input").value;
-  var url = `${state.server}/api/v1${state.nextStage}?lang=en&sessionID=${state.sessionID}`;
+  var url = `${state.server}/api/v1/${state.mode}${state.nextStage}?lang=${state.language}&sessionID=${state.sessionID}`;
   var body = {
     user: inputValue,
   };
@@ -82,7 +109,7 @@ function sendMessage() {
 
 function repeatMessage() {
   var inputValue = document.getElementById("input").value;
-  var url = `http://localhost:3030/api/v1${state.currentStage}?lang=en&sessionID=${state.sessionID}`;
+  var url = `http://localhost:3030/api/v1${state.currentStage}?lang=${state.language}&sessionID=${state.sessionID}`;
   var body = {
     user: inputValue,
   };
